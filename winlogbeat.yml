@@ -1,0 +1,23 @@
+# You can find the full configuration reference here:
+# https://www.elastic.co/guide/en/beats/winlogbeat/index.html
+# https://go.es.io/WinlogbeatConfig
+
+winlogbeat.event_logs:
+  - name: Application
+    ignore_older: 72h
+  - name: Security
+  - name: System
+  - name: Powershell
+
+output.logstash:
+  enabled: true
+  hosts: ["elk.linxtelecom.com:20000"]
+  type: "wineventlog"
+
+logging.level: warning
+logging.to_files: true
+logging.to_syslog: false
+logging.files:
+  path: C:\ProgramData\winlogbeat\
+  name: winlogbeat.log
+  keepfiles: 7

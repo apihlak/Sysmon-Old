@@ -1,0 +1,47 @@
+<!-- 
+   This is a Microsoft Sysmon configuation to be used on Windows workstations
+   v0.1 
+   Florian Roth (with the help and ideas of others)
+   
+   The focus of this configuration is 
+   - malware detection (execution)
+   - malware detection (network connections)
+   - exploit detection
+   It is not focussed on 
+   - hacking activity on workstation (bad admin, attacker)
+   
+   See Windows server base config: https://gist.github.com/Neo23x0/a4b4af9481e01e749409
+--> 
+<Sysmon schemaversion="2.01">
+    <!-- Capture MD5 Hashes -->
+    <HashAlgorithms>*</HashAlgorithms>
+    <EventFiltering>
+        <!-- Log all drivers except if the signature -->
+        <!-- contains Microsoft or Windows -->
+        <DriverLoad onmatch="exclude">
+            <Signature condition="contains">microsoft</Signature>
+            <Signature condition="contains">windows</Signature>
+        </DriverLoad>
+        <!-- Exclude certain processes that have the integrity level 'System' -->
+        <ProcessCreate onmatch="exclude">
+            <IntegrityLevel>System</IntegrityLevel>
+        </ProcessCreate>
+        <!-- Do not log file creation time stamps -->
+        <FileCreateTime onmatch="include" />
+        <!-- Do not log raw disk access (caused event flooding with certain disk encryption drivers) -->
+        <RawAccessRead onmatch="include" />
+        <!-- Do not log process termination -->
+        <ProcessTerminate onmatch="include" />
+        <!-- Do only log network connections to port 8080 (proxy) of every program that is not a browser -->
+        <NetworkConnect onmatch="exclude">
+            <Image condition="contains">chrome.exe</Image>
+            <Image condition="contains">iexplore.exe</Image> <!-- yes, malware that injects into IE will be missed -->
+            <Image condition="contains">firefox.exe</Image>
+            <DestinationPort condition="is not">8080</DestinationPort>
+            <!-- Direct access to Internet (without proxy server) -->
+            <!-- 
+            <DestinationPort condition="is not">80</DestinationPort>
+            -->
+        </NetworkConnect>
+    </EventFiltering>
+</Sysmon>
